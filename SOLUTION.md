@@ -5,7 +5,7 @@ This document outlines the architecture, trade-offs, security considerations, mo
 ## Architecture
 
 - **VPC**: Public and private subnets across multiple AZs with NAT Gateway for outbound access.
-- **ECS Fargate**: Runs the `hashicorp/http-echo` container behind an ALB.
+- **ECS Fargate**: Runs a custom Flask application behind an ALB.
 - **RDS PostgreSQL**: Stores persistent data and sessions in private subnets.
 - **DynamoDB**: Metadata storage with pay-per-request billing.
 - **SQS & SNS**: Asynchronous messaging; SNS delivers alerts via email subscription.
@@ -24,7 +24,7 @@ This document outlines the architecture, trade-offs, security considerations, mo
 ## Monitoring & Alerting
 
 - **CloudWatch Log Groups**:
-  - `/ecs/http-echo-service`
+  - `/ecs/flask-app-service`
   - `/terraform/deploy`
 - **Alarms**:
   1. **RDS CPU Utilization > 80%** for 5 minutes → Alarm to SNS topic.

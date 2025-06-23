@@ -31,7 +31,7 @@ graph TD
             end
 
             subgraph "Private Subnets (Multi-AZ)"
-                ECS[ECS Fargate Service <br> hashicorp/http-echo]
+                ECS[ECS Fargate Service <br> Flask App]
                 RDS[RDS PostgreSQL Instance]
             end
         end

@@ -93,13 +93,13 @@ resource "aws_ecs_cluster" "main" {
 }
 
 resource "aws_cloudwatch_log_group" "ecs_logs" {
-  name = "/ecs/${var.project_name}-http-echo"
+  name = "/ecs/${var.project_name}-flask-app"
   tags = { Project = var.project_name }
 }
 
 # ECS Task Definition
 resource "aws_ecs_task_definition" "http_echo" {
-  family                   = "${var.project_name}-http-echo"
+  family                   = "${var.project_name}-flask-app"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"  # 0.25 vCPU
