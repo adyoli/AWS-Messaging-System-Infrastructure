@@ -81,7 +81,7 @@ jobs:
       # Apply infrastructure changes, including updating ECS to use the new image.
       - name: Terraform Apply
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars"
+        run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars" -var="ecs_image_uri=${{ env.REPO }}:${{ env.SHA_TAG }}"
 
       # --- Post-Deploy Health Check ---
       # After deployment, run a health check against the ALB endpoint to verify the service is up.
