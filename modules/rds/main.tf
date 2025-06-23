@@ -37,7 +37,7 @@ resource "aws_db_instance" "default" {
   allocated_storage    = 20
   storage_type         = "gp2"
   engine               = "postgres"
-  engine_version       = "14.5"
+  engine_version       = "14.11"
   instance_class       = "db.t3.micro" # Cost-effective choice for an assessment
   username             = var.db_username
   password             = var.db_password
