@@ -29,8 +29,8 @@ resource "aws_security_group" "ecs_service_sg" {
 
   ingress {
     description     = "Allow traffic from ALB"
-    from_port       = 5678 # The http-echo container port
-    to_port         = 5678
+    from_port       = 8080 # The Flask app container port
+    to_port         = 8080
     protocol        = "tcp"
     security_groups = [aws_security_group.alb_sg.id]
   }
@@ -58,13 +58,13 @@ resource "aws_lb" "main" {
 
 resource "aws_lb_target_group" "http_echo" {
   name        = "${var.project_name}-tg"
-  port        = 5678
+  port        = 8080
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
   target_type = "ip"
 
   health_check {
-    path                = "/"
+    path                = "/health"
     port                = "traffic-port"
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -109,16 +109,15 @@ resource "aws_ecs_task_definition" "http_echo" {
 
   container_definitions = jsonencode([
     {
-      name      = "http-echo"
+      name      = "my-flask-app"
       image     = var.ecs_image_uri
       cpu       = 256
       memory    = 512
       essential = true
-      command   = ["-text=hello-world"]
       portMappings = [
         {
-          containerPort = 5678
-          hostPort      = 5678
+          containerPort = 8080
+          hostPort      = 8080
         }
       ]
       logConfiguration = {
@@ -137,7 +136,7 @@ resource "aws_ecs_task_definition" "http_echo" {
 
 # ECS Service
 resource "aws_ecs_service" "main" {
-  name            = "${var.project_name}-http-echo-service"
+  name            = "${var.project_name}-flask-app-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.http_echo.arn
   desired_count   = 2
@@ -150,8 +149,8 @@ resource "aws_ecs_service" "main" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.http_echo.arn
-    container_name   = "http-echo"
-    container_port   = 5678
+    container_name   = "my-flask-app"
+    container_port   = 8080
   }
 
   depends_on = [aws_lb_listener.http]
