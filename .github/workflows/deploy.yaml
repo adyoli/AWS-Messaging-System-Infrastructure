@@ -35,10 +35,6 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init
-      
-      - name: Clean up before apply
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: terraform destroy -auto-approve
 
       - name: Terraform Validate
         id: validate
@@ -55,7 +51,7 @@ jobs:
 
       - name: Wait for ALB to be ready
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: sleep 240
+        run: sleep 2
 
       - name: Debug URL
         run: terraform output alb_dns_name
@@ -64,10 +60,10 @@ jobs:
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: |
           pip install requests
-          # Wait a bit for the ALB to be fully available
-          sleep 120 
+          sleep 60
           URL=$(terraform output -raw alb_dns_name)
-          python scripts/health_check.py http://${URL}
+          echo "ALB URL: $URL"
+          python scripts/health_check.py "http://$URL"
 
       - name: Wait before Destroy
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
