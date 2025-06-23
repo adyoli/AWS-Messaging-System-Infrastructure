@@ -42,12 +42,12 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -input=false
+        run: terraform plan -no-color -input=false -var-file="terraform.tfvars"
         # For PRs, the plan could be posted as a comment
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false
+        run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars"
 
       - name: Run Post-Deploy Health Check
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
