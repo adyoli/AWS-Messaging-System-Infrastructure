@@ -32,6 +32,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      # --- Terraform: Prepare and Plan Infrastructure ---
+      # Ensure all AWS resources (ECR, ECS, ALB, etc.) exist and are up-to-date before building and pushing the Docker image.
       - name: Terraform Init
         id: init
         run: terraform init
@@ -44,20 +46,12 @@ jobs:
         id: plan
         run: terraform plan -no-color -input=false -var-file="terraform.tfvars"
 
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars"
-
-      - name: Run Post-Deploy Health Check
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: |
-          pip install requests
-          URL=$($TERRAFORM_CLI_PATH/terraform-bin output -raw alb_dns_name)
-          echo "ALB URL: $URL"
-          python scripts/health_check.py "http://$URL"
-
+      # --- Docker Build & Push: Hardened Flask App ---
+      # Build and push the Docker image after confirming infra plan, but before apply.
+      # The Dockerfile uses a multi-stage build, pinned dependencies, and a dedicated non-root user for security.
+      # The image is tagged with both 'latest' and the commit SHA, and pushed to ECR for ECS deployment.
       - name: Build Docker image
-        run: docker build -t my-echo-app .
+        run: docker build -t my-flask-app .
 
       - name: Set up Docker tags
         id: docker_tags
@@ -72,13 +66,30 @@ jobs:
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ env.REPO }}
 
       - name: Tag Docker image (latest)
-        run: docker tag my-echo-app:latest ${{ env.REPO }}:latest
+        run: docker tag my-flask-app:latest ${{ env.REPO }}:latest
 
       - name: Tag Docker image (commit SHA)
-        run: docker tag my-echo-app:latest ${{ env.REPO }}:${{ env.SHA_TAG }}
+        run: docker tag my-flask-app:latest ${{ env.REPO }}:${{ env.SHA_TAG }}
 
       - name: Push Docker image to ECR (latest)
         run: docker push ${{ env.REPO }}:latest
 
       - name: Push Docker image to ECR (commit SHA)
         run: docker push ${{ env.REPO }}:${{ env.SHA_TAG }}
+
+      # --- Terraform: Apply Infrastructure Changes ---
+      # Apply infrastructure changes, including updating ECS to use the new image.
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars"
+
+      # --- Post-Deploy Health Check ---
+      # After deployment, run a health check against the ALB endpoint to verify the service is up.
+      - name: Run Post-Deploy Health Check
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: |
+          pip install requests
+          URL=$($TERRAFORM_CLI_PATH/terraform-bin output -raw alb_dns_name)
+          echo "ALB URL: $URL"
+          python scripts/health_check.py "http://$URL"
+
