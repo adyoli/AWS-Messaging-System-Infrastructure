@@ -5,14 +5,14 @@ terraform {
       version = "~> 5.0"
     }
   }
-  # For team collaboration, a remote backend is best practice.
-  # backend "s3" {
-  #   bucket         = "your-terraform-state-bucket-name"
-  #   key            = "bonmoja/terraform.tfstate"
-  #   region         = "us-east-1"
-  #   dynamodb_table = "terraform-state-lock"
-  #   encrypt        = true
-  # }
+
+  backend "s3" {
+    bucket         = "bonmoja-tf-state"
+    key            = "bonmoja/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "bonmoja-tf-locks"
+    encrypt        = true
+  }
 }
 
 provider "aws" {

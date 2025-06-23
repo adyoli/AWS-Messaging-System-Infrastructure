@@ -37,11 +37,11 @@ resource "aws_db_instance" "default" {
   allocated_storage    = 20
   storage_type         = "gp2"
   engine               = "postgres"
-  engine_version       = "14.11"
+  engine_version       = "17.5"
   instance_class       = "db.t3.micro" # Cost-effective choice for an assessment
   username             = var.db_username
   password             = var.db_password
-  parameter_group_name = "default.postgres14"
+  parameter_group_name = "default.postgres17"
   db_subnet_group_name = aws_db_subnet_group.default.name
   vpc_security_group_ids = [aws_security_group.rds.id]
   skip_final_snapshot  = true
