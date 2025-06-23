@@ -53,18 +53,25 @@ jobs:
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars"
 
+      - name: Wait for ALB to be ready
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: sleep 240
+
+      - name: Debug URL
+        run: terraform output alb_dns_name
+
       - name: Run Post-Deploy Health Check
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: |
           pip install requests
           # Wait a bit for the ALB to be fully available
-          sleep 60 
+          sleep 120 
           URL=$(terraform output -raw alb_dns_name)
           python scripts/health_check.py http://${URL}
 
       - name: Wait before Destroy
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: sleep 120
+        run: sleep 30
 
       - name: Destroy Infrastructure
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
