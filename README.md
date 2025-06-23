@@ -19,7 +19,7 @@ This repository contains the infrastructure-as-code and CI/CD pipeline for a sim
 graph TD
     subgraph "External"
         User[End User]
-        CICD[CI/CD Pipeline <br> e.g., GitHub Actions]
+        CICD[CI/CD Pipeline <br> GitHub Actions]
     end
 
     subgraph "AWS Cloud"
