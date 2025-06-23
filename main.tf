@@ -42,6 +42,7 @@ module "ecs" {
   private_subnets       = module.vpc.private_subnets
   ecs_task_iam_role_arn = aws_iam_role.ecs_task_role.arn
   ecs_sg_id             = module.ecs.ecs_service_sg_id
+  ecs_image_uri         = var.ecs_image_uri
 }
 
 # -------------------------------------------------------------------------------------------------

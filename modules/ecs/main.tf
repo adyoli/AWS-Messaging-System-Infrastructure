@@ -110,7 +110,7 @@ resource "aws_ecs_task_definition" "http_echo" {
   container_definitions = jsonencode([
     {
       name      = "http-echo"
-      image     = "hashicorp/http-echo" 
+      image     = var.ecs_image_uri
       cpu       = 256
       memory    = 512
       essential = true

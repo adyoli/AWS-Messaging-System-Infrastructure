@@ -55,3 +55,30 @@ jobs:
           URL=$($TERRAFORM_CLI_PATH/terraform-bin output -raw alb_dns_name)
           echo "ALB URL: $URL"
           python scripts/health_check.py "http://$URL"
+
+      - name: Build Docker image
+        run: docker build -t my-echo-app .
+
+      - name: Set up Docker tags
+        id: docker_tags
+        run: |
+          echo "REPO=863518437902.dkr.ecr.us-east-1.amazonaws.com/bonmoja-assessment-repo" >> $GITHUB_ENV
+          echo "SHA_TAG=$(echo $GITHUB_SHA | head -c 7)" >> $GITHUB_ENV
+
+      - name: Login to Amazon ECR
+        env:
+          AWS_REGION: us-east-1
+        run: |
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ env.REPO }}
+
+      - name: Tag Docker image (latest)
+        run: docker tag my-echo-app:latest ${{ env.REPO }}:latest
+
+      - name: Tag Docker image (commit SHA)
+        run: docker tag my-echo-app:latest ${{ env.REPO }}:${{ env.SHA_TAG }}
+
+      - name: Push Docker image to ECR (latest)
+        run: docker push ${{ env.REPO }}:latest
+
+      - name: Push Docker image to ECR (commit SHA)
+        run: docker push ${{ env.REPO }}:${{ env.SHA_TAG }}

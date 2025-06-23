@@ -32,3 +32,8 @@ variable "ecs_sg_id" {
   description = "The ID of the ECS service security group to allow connections from."
   type        = string
 }
+
+variable "ecs_image_uri" {
+  description = "The URI of the Docker image to use for the ECS service."
+  type        = string
+}

@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+infra-*.png
+infra-*.dot
+*.tfstate*
+*.log
+.DS_Store 

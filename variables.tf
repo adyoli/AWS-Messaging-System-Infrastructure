@@ -28,3 +28,8 @@ variable "sns_email_endpoint" {
   description = "Email address for SNS topic subscription."
   type        = string
 }
+
+variable "ecs_image_uri" {
+  description = "The URI of the Docker image to use for the ECS service."
+  type        = string
+}
