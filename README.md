@@ -41,7 +41,7 @@ graph TD
     SNSSub[Email Subscription]
   end
 
-  User -->|HTTP(S) Request| ALB
+  User -->|HTTPS Request| ALB
   CI -->|Push Image| ECR
   CI -->|Deploy Infra| Terraform((Terraform))
   Terraform --> VPC
