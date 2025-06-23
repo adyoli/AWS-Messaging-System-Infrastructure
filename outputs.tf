@@ -10,3 +10,7 @@ output "dynamodb_table_name" {
   description = "The name of the DynamoDB table."
   value       = aws_dynamodb_table.metadata_storage.name
 }
+output "alb_dns_name" {
+  description = "The DNS name of the Application Load Balancer."
+  value       = module.ecs.alb_dns_name
+}
