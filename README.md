@@ -17,43 +17,58 @@ This repository contains the infrastructure-as-code and CI/CD pipeline for a sim
 
 ```mermaid
 graph TD
-  subgraph "External"
-    User[End User]
-    CI[CI/CD Pipeline<br>GitHub Actions]
-  end
-  subgraph "AWS Cloud"
-    subgraph "VPC"
-      subgraph "Public Subnets (Multi-AZ)"
-        ALB[Application Load Balancer]
-      end
-      subgraph "Private Subnets (Multi-AZ)"
-        ECS[ECS Fargate Service<br>hashicorp/http-echo]
-        RDS[RDS PostgreSQL]
-      end
-      NAT[NAT Gateway]
-      IGW[Internet Gateway]
+    subgraph "External"
+        User[End User]
+        CICD[CI/CD Pipeline <br> e.g., GitHub Actions]
     end
-    ECR[Amazon ECR]
-    DDB[DynamoDB Table]
-    SQS[SQS Queue]
-    SNS[SNS Topic]
-    CW[CloudWatch Logs & Alarms]
-    SNSSub[Email Subscription]
-  end
 
-  User -->|HTTPS Request| ALB
-  CI -->|Push Image| ECR
-  CI -->|Deploy Infra| Terraform((Terraform))
-  Terraform --> VPC
-  ECR --> ECS
-  ALB --> ECS
-  ECS -->|Reads/Writes| RDS
-  ECS -->|Stores Metadata| DDB
-  ECS -->|Sends Messages| SQS
-  SQS --> CW
-  RDS --> CW
-  CW -->|Alarm| SNS
-  SNS --> SNSSub
+    subgraph "AWS Cloud"
+        subgraph "VPC"
+            subgraph "Public Subnets (Multi-AZ)"
+                ALB[Application Load Balancer]
+                NAT[NAT Gateway]
+                IGW[Internet Gateway]
+            end
+
+            subgraph "Private Subnets (Multi-AZ)"
+                ECS[ECS Fargate Service <br> hashicorp/http-echo]
+                RDS[RDS PostgreSQL Instance]
+            end
+        end
+
+        subgraph "AWS Services"
+            DynamoDB[DynamoDB Table]
+            SQS[SQS Queue]
+            SNS[SNS Topic]
+            CloudWatch[CloudWatch <br> Logs & Alarms]
+            ECR[Amazon ECR]
+        end
+
+        subgraph "Notification Endpoint"
+            Subscription[SNS Subscription <br> e.g., Email]
+        end
+
+
+        User -- HTTP/S Request --> ALB
+        ALB -- Forwards traffic --> ECS
+        ECS -- Outbound Internet --> NAT -- Egress --> IGW
+        ECS -- Reads/Writes Data --> RDS
+        ECS -- Stores Metadata --> DynamoDB
+        ECS -- Sends Messages --> SQS
+        ECS -- Publishes Events --> SNS
+        ECS -- Sends Logs --> CloudWatch
+
+        RDS -- Sends Metrics --> CloudWatch
+        SQS -- Sends Metrics --> CloudWatch
+        CloudWatch -- Triggers Alarm --> SNS
+        SNS -- Sends Notification --> Subscription
+
+        CICD -- Pushes Image --> ECR
+        CICD -- Deploys Infrastructure (Terraform) --> AWS
+        CICD -- Runs Health Check --> ALB
+    end
+
+    linkStyle 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14 stroke-width:2px,fill:none,stroke:blue;
 ```
 
 ## Requirements
