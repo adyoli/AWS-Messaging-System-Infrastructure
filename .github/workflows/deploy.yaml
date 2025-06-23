@@ -61,7 +61,7 @@ jobs:
         run: |
           pip install requests
           sleep 60
-          URL=$($TERRAFORM_CLI_PATH output -raw alb_dns_name)
+          URL=$($TERRAFORM_CLI_PATH/terraform-bin output -raw alb_dns_name)
           echo "ALB URL: $URL"
           python scripts/health_check.py "http://$URL"
 
