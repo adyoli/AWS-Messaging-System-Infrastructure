@@ -3,18 +3,20 @@
 # --- Builder stage: install dependencies ---
 FROM python:3.11-slim AS builder
 WORKDIR /app
-# Copy requirements and install with pinned versions for security and reproducibility
+
+# Install build dependencies (if needed for native packages)
+RUN apt-get update && apt-get install -y --no-install-recommends gcc && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install globally in /install
 COPY app/requirements.txt .
-RUN pip install --user -r requirements.txt
+RUN pip install --prefix=/install --no-cache-dir -r requirements.txt
 
 # --- Final stage: minimal runtime image ---
 FROM python:3.11-slim
 WORKDIR /app
-# Copy only installed dependencies from builder to keep image small
-COPY --from=builder /root/.local /root/.local
-# Ensure Python output is not buffered (for logging in containers)
-ENV PATH=/root/.local/bin:$PATH
-ENV PYTHONUNBUFFERED=1
+
+# Copy only the installed dependencies from builder
+COPY --from=builder /install /usr/local
 
 # Create a dedicated non-root user for security
 RUN useradd -m appuser && chown -R appuser /app
@@ -23,6 +25,7 @@ USER appuser
 # Copy application code
 COPY app/app.py .
 
+ENV PYTHONUNBUFFERED=1
+
 EXPOSE 8080
-# Run the app as the dedicated user
 CMD ["python", "app.py"] 
