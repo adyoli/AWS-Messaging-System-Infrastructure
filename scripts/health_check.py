@@ -3,7 +3,7 @@ import sys
 import requests
 import time
 
-def check_service_health(url: str, retries: int = 3, delay: int = 10):
+def check_service_health(url: str, retries: int = 5, delay: int = 5):
     """
     Sends a request to the HTTP service to check its health.
     Retries a few times before failing.
