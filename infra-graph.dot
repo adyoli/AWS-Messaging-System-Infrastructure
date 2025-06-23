@@ -1,0 +1,188 @@
+digraph {
+	compound = "true"
+	newrank = "true"
+	subgraph "root" {
+		"[root] aws_cloudwatch_metric_alarm.rds_cpu (expand)" [label = "aws_cloudwatch_metric_alarm.rds_cpu", shape = "box"]
+		"[root] aws_cloudwatch_metric_alarm.sqs_depth (expand)" [label = "aws_cloudwatch_metric_alarm.sqs_depth", shape = "box"]
+		"[root] aws_dynamodb_table.metadata_storage (expand)" [label = "aws_dynamodb_table.metadata_storage", shape = "box"]
+		"[root] aws_iam_role.ecs_task_role (expand)" [label = "aws_iam_role.ecs_task_role", shape = "box"]
+		"[root] aws_iam_role_policy.ecs_task_policy (expand)" [label = "aws_iam_role_policy.ecs_task_policy", shape = "box"]
+		"[root] aws_sns_topic.notification_topic (expand)" [label = "aws_sns_topic.notification_topic", shape = "box"]
+		"[root] aws_sns_topic_subscription.email_subscription (expand)" [label = "aws_sns_topic_subscription.email_subscription", shape = "box"]
+		"[root] aws_sqs_queue.message_queue (expand)" [label = "aws_sqs_queue.message_queue", shape = "box"]
+		"[root] module.ecs.aws_cloudwatch_log_group.ecs_logs (expand)" [label = "module.ecs.aws_cloudwatch_log_group.ecs_logs", shape = "box"]
+		"[root] module.ecs.aws_ecs_cluster.main (expand)" [label = "module.ecs.aws_ecs_cluster.main", shape = "box"]
+		"[root] module.ecs.aws_ecs_service.main (expand)" [label = "module.ecs.aws_ecs_service.main", shape = "box"]
+		"[root] module.ecs.aws_ecs_task_definition.http_echo (expand)" [label = "module.ecs.aws_ecs_task_definition.http_echo", shape = "box"]
+		"[root] module.ecs.aws_iam_role.ecs_task_execution_role (expand)" [label = "module.ecs.aws_iam_role.ecs_task_execution_role", shape = "box"]
+		"[root] module.ecs.aws_iam_role_policy_attachment.ecs_task_execution_role_policy (expand)" [label = "module.ecs.aws_iam_role_policy_attachment.ecs_task_execution_role_policy", shape = "box"]
+		"[root] module.ecs.aws_lb.main (expand)" [label = "module.ecs.aws_lb.main", shape = "box"]
+		"[root] module.ecs.aws_lb_listener.http (expand)" [label = "module.ecs.aws_lb_listener.http", shape = "box"]
+		"[root] module.ecs.aws_lb_target_group.http_echo (expand)" [label = "module.ecs.aws_lb_target_group.http_echo", shape = "box"]
+		"[root] module.ecs.aws_security_group.alb_sg (expand)" [label = "module.ecs.aws_security_group.alb_sg", shape = "box"]
+		"[root] module.ecs.aws_security_group.ecs_service_sg (expand)" [label = "module.ecs.aws_security_group.ecs_service_sg", shape = "box"]
+		"[root] module.rds.aws_db_instance.default (expand)" [label = "module.rds.aws_db_instance.default", shape = "box"]
+		"[root] module.rds.aws_db_subnet_group.default (expand)" [label = "module.rds.aws_db_subnet_group.default", shape = "box"]
+		"[root] module.rds.aws_security_group.rds (expand)" [label = "module.rds.aws_security_group.rds", shape = "box"]
+		"[root] module.vpc.aws_eip.nat (expand)" [label = "module.vpc.aws_eip.nat", shape = "box"]
+		"[root] module.vpc.aws_internet_gateway.main (expand)" [label = "module.vpc.aws_internet_gateway.main", shape = "box"]
+		"[root] module.vpc.aws_nat_gateway.main (expand)" [label = "module.vpc.aws_nat_gateway.main", shape = "box"]
+		"[root] module.vpc.aws_route_table.private (expand)" [label = "module.vpc.aws_route_table.private", shape = "box"]
+		"[root] module.vpc.aws_route_table.public (expand)" [label = "module.vpc.aws_route_table.public", shape = "box"]
+		"[root] module.vpc.aws_route_table_association.private (expand)" [label = "module.vpc.aws_route_table_association.private", shape = "box"]
+		"[root] module.vpc.aws_route_table_association.public (expand)" [label = "module.vpc.aws_route_table_association.public", shape = "box"]
+		"[root] module.vpc.aws_subnet.private (expand)" [label = "module.vpc.aws_subnet.private", shape = "box"]
+		"[root] module.vpc.aws_subnet.public (expand)" [label = "module.vpc.aws_subnet.public", shape = "box"]
+		"[root] module.vpc.aws_vpc.main (expand)" [label = "module.vpc.aws_vpc.main", shape = "box"]
+		"[root] module.vpc.data.aws_availability_zones.available (expand)" [label = "module.vpc.data.aws_availability_zones.available", shape = "box"]
+		"[root] provider[\"registry.terraform.io/hashicorp/aws\"]" [label = "provider[\"registry.terraform.io/hashicorp/aws\"]", shape = "diamond"]
+		"[root] var.aws_region" [label = "var.aws_region", shape = "note"]
+		"[root] var.db_password" [label = "var.db_password", shape = "note"]
+		"[root] var.db_username" [label = "var.db_username", shape = "note"]
+		"[root] var.project_name" [label = "var.project_name", shape = "note"]
+		"[root] var.sns_email_endpoint" [label = "var.sns_email_endpoint", shape = "note"]
+		"[root] var.vpc_cidr" [label = "var.vpc_cidr", shape = "note"]
+		"[root] aws_cloudwatch_metric_alarm.rds_cpu (expand)" -> "[root] aws_sns_topic.notification_topic (expand)"
+		"[root] aws_cloudwatch_metric_alarm.rds_cpu (expand)" -> "[root] module.rds.output.db_instance_id (expand)"
+		"[root] aws_cloudwatch_metric_alarm.sqs_depth (expand)" -> "[root] aws_sns_topic.notification_topic (expand)"
+		"[root] aws_cloudwatch_metric_alarm.sqs_depth (expand)" -> "[root] aws_sqs_queue.message_queue (expand)"
+		"[root] aws_dynamodb_table.metadata_storage (expand)" -> "[root] provider[\"registry.terraform.io/hashicorp/aws\"]"
+		"[root] aws_dynamodb_table.metadata_storage (expand)" -> "[root] var.project_name"
+		"[root] aws_iam_role.ecs_task_role (expand)" -> "[root] provider[\"registry.terraform.io/hashicorp/aws\"]"
+		"[root] aws_iam_role.ecs_task_role (expand)" -> "[root] var.project_name"
+		"[root] aws_iam_role_policy.ecs_task_policy (expand)" -> "[root] aws_dynamodb_table.metadata_storage (expand)"
+		"[root] aws_iam_role_policy.ecs_task_policy (expand)" -> "[root] aws_iam_role.ecs_task_role (expand)"
+		"[root] aws_iam_role_policy.ecs_task_policy (expand)" -> "[root] aws_sns_topic.notification_topic (expand)"
+		"[root] aws_iam_role_policy.ecs_task_policy (expand)" -> "[root] aws_sqs_queue.message_queue (expand)"
+		"[root] aws_sns_topic.notification_topic (expand)" -> "[root] provider[\"registry.terraform.io/hashicorp/aws\"]"
+		"[root] aws_sns_topic.notification_topic (expand)" -> "[root] var.project_name"
+		"[root] aws_sns_topic_subscription.email_subscription (expand)" -> "[root] aws_sns_topic.notification_topic (expand)"
+		"[root] aws_sns_topic_subscription.email_subscription (expand)" -> "[root] var.sns_email_endpoint"
+		"[root] aws_sqs_queue.message_queue (expand)" -> "[root] provider[\"registry.terraform.io/hashicorp/aws\"]"
+		"[root] aws_sqs_queue.message_queue (expand)" -> "[root] var.project_name"
+		"[root] module.ecs (close)" -> "[root] module.ecs.aws_ecs_service.main (expand)"
+		"[root] module.ecs (close)" -> "[root] module.ecs.aws_iam_role_policy_attachment.ecs_task_execution_role_policy (expand)"
+		"[root] module.ecs (close)" -> "[root] module.ecs.output.alb_dns_name (expand)"
+		"[root] module.ecs (close)" -> "[root] module.ecs.var.ecs_sg_id (expand)"
+		"[root] module.ecs.aws_cloudwatch_log_group.ecs_logs (expand)" -> "[root] module.ecs.var.project_name (expand)"
+		"[root] module.ecs.aws_cloudwatch_log_group.ecs_logs (expand)" -> "[root] provider[\"registry.terraform.io/hashicorp/aws\"]"
+		"[root] module.ecs.aws_ecs_cluster.main (expand)" -> "[root] module.ecs.var.project_name (expand)"
+		"[root] module.ecs.aws_ecs_cluster.main (expand)" -> "[root] provider[\"registry.terraform.io/hashicorp/aws\"]"
+		"[root] module.ecs.aws_ecs_service.main (expand)" -> "[root] module.ecs.aws_ecs_cluster.main (expand)"
+		"[root] module.ecs.aws_ecs_service.main (expand)" -> "[root] module.ecs.aws_ecs_task_definition.http_echo (expand)"
+		"[root] module.ecs.aws_ecs_service.main (expand)" -> "[root] module.ecs.aws_lb_listener.http (expand)"
+		"[root] module.ecs.aws_ecs_service.main (expand)" -> "[root] module.ecs.aws_security_group.ecs_service_sg (expand)"
+		"[root] module.ecs.aws_ecs_service.main (expand)" -> "[root] module.ecs.var.private_subnets (expand)"
+		"[root] module.ecs.aws_ecs_task_definition.http_echo (expand)" -> "[root] module.ecs.aws_cloudwatch_log_group.ecs_logs (expand)"
+		"[root] module.ecs.aws_ecs_task_definition.http_echo (expand)" -> "[root] module.ecs.aws_iam_role.ecs_task_execution_role (expand)"
+		"[root] module.ecs.aws_ecs_task_definition.http_echo (expand)" -> "[root] module.ecs.var.aws_region (expand)"
+		"[root] module.ecs.aws_ecs_task_definition.http_echo (expand)" -> "[root] module.ecs.var.ecs_task_iam_role_arn (expand)"
+		"[root] module.ecs.aws_iam_role.ecs_task_execution_role (expand)" -> "[root] module.ecs.var.project_name (expand)"
+		"[root] module.ecs.aws_iam_role.ecs_task_execution_role (expand)" -> "[root] provider[\"registry.terraform.io/hashicorp/aws\"]"
+		"[root] module.ecs.aws_iam_role_policy_attachment.ecs_task_execution_role_policy (expand)" -> "[root] module.ecs.aws_iam_role.ecs_task_execution_role (expand)"
+		"[root] module.ecs.aws_lb.main (expand)" -> "[root] module.ecs.aws_security_group.alb_sg (expand)"
+		"[root] module.ecs.aws_lb.main (expand)" -> "[root] module.ecs.var.public_subnets (expand)"
+		"[root] module.ecs.aws_lb_listener.http (expand)" -> "[root] module.ecs.aws_lb.main (expand)"
+		"[root] module.ecs.aws_lb_listener.http (expand)" -> "[root] module.ecs.aws_lb_target_group.http_echo (expand)"
+		"[root] module.ecs.aws_lb_target_group.http_echo (expand)" -> "[root] module.ecs.var.project_name (expand)"
+		"[root] module.ecs.aws_lb_target_group.http_echo (expand)" -> "[root] module.ecs.var.vpc_id (expand)"
+		"[root] module.ecs.aws_security_group.alb_sg (expand)" -> "[root] module.ecs.var.project_name (expand)"
+		"[root] module.ecs.aws_security_group.alb_sg (expand)" -> "[root] module.ecs.var.vpc_id (expand)"
+		"[root] module.ecs.aws_security_group.ecs_service_sg (expand)" -> "[root] module.ecs.aws_security_group.alb_sg (expand)"
+		"[root] module.ecs.output.alb_dns_name (expand)" -> "[root] module.ecs.aws_lb.main (expand)"
+		"[root] module.ecs.output.ecs_service_sg_id (expand)" -> "[root] module.ecs.aws_security_group.ecs_service_sg (expand)"
+		"[root] module.ecs.var.aws_region (expand)" -> "[root] module.ecs (expand)"
+		"[root] module.ecs.var.aws_region (expand)" -> "[root] var.aws_region"
+		"[root] module.ecs.var.ecs_sg_id (expand)" -> "[root] module.ecs.output.ecs_service_sg_id (expand)"
+		"[root] module.ecs.var.ecs_task_iam_role_arn (expand)" -> "[root] aws_iam_role.ecs_task_role (expand)"
+		"[root] module.ecs.var.ecs_task_iam_role_arn (expand)" -> "[root] module.ecs (expand)"
+		"[root] module.ecs.var.private_subnets (expand)" -> "[root] module.ecs (expand)"
+		"[root] module.ecs.var.private_subnets (expand)" -> "[root] module.vpc.output.private_subnets (expand)"
+		"[root] module.ecs.var.project_name (expand)" -> "[root] module.ecs (expand)"
+		"[root] module.ecs.var.project_name (expand)" -> "[root] var.project_name"
+		"[root] module.ecs.var.public_subnets (expand)" -> "[root] module.ecs (expand)"
+		"[root] module.ecs.var.public_subnets (expand)" -> "[root] module.vpc.output.public_subnets (expand)"
+		"[root] module.ecs.var.vpc_id (expand)" -> "[root] module.ecs (expand)"
+		"[root] module.ecs.var.vpc_id (expand)" -> "[root] module.vpc.output.vpc_id (expand)"
+		"[root] module.rds (close)" -> "[root] module.rds.output.db_endpoint (expand)"
+		"[root] module.rds (close)" -> "[root] module.rds.output.db_instance_id (expand)"
+		"[root] module.rds.aws_db_instance.default (expand)" -> "[root] module.rds.aws_db_subnet_group.default (expand)"
+		"[root] module.rds.aws_db_instance.default (expand)" -> "[root] module.rds.aws_security_group.rds (expand)"
+		"[root] module.rds.aws_db_instance.default (expand)" -> "[root] module.rds.var.db_password (expand)"
+		"[root] module.rds.aws_db_instance.default (expand)" -> "[root] module.rds.var.db_username (expand)"
+		"[root] module.rds.aws_db_subnet_group.default (expand)" -> "[root] module.rds.var.private_subnets (expand)"
+		"[root] module.rds.aws_db_subnet_group.default (expand)" -> "[root] module.rds.var.project_name (expand)"
+		"[root] module.rds.aws_security_group.rds (expand)" -> "[root] module.rds.var.ecs_sg_id (expand)"
+		"[root] module.rds.aws_security_group.rds (expand)" -> "[root] module.rds.var.project_name (expand)"
+		"[root] module.rds.aws_security_group.rds (expand)" -> "[root] module.rds.var.vpc_id (expand)"
+		"[root] module.rds.output.db_endpoint (expand)" -> "[root] module.rds.aws_db_instance.default (expand)"
+		"[root] module.rds.output.db_instance_id (expand)" -> "[root] module.rds.aws_db_instance.default (expand)"
+		"[root] module.rds.var.db_password (expand)" -> "[root] module.rds (expand)"
+		"[root] module.rds.var.db_password (expand)" -> "[root] var.db_password"
+		"[root] module.rds.var.db_username (expand)" -> "[root] module.rds (expand)"
+		"[root] module.rds.var.db_username (expand)" -> "[root] var.db_username"
+		"[root] module.rds.var.ecs_sg_id (expand)" -> "[root] module.ecs.output.ecs_service_sg_id (expand)"
+		"[root] module.rds.var.ecs_sg_id (expand)" -> "[root] module.rds (expand)"
+		"[root] module.rds.var.private_subnets (expand)" -> "[root] module.rds (expand)"
+		"[root] module.rds.var.private_subnets (expand)" -> "[root] module.vpc.output.private_subnets (expand)"
+		"[root] module.rds.var.project_name (expand)" -> "[root] module.rds (expand)"
+		"[root] module.rds.var.project_name (expand)" -> "[root] var.project_name"
+		"[root] module.rds.var.vpc_id (expand)" -> "[root] module.rds (expand)"
+		"[root] module.rds.var.vpc_id (expand)" -> "[root] module.vpc.output.vpc_id (expand)"
+		"[root] module.vpc (close)" -> "[root] module.vpc.aws_route_table_association.private (expand)"
+		"[root] module.vpc (close)" -> "[root] module.vpc.aws_route_table_association.public (expand)"
+		"[root] module.vpc (close)" -> "[root] module.vpc.output.private_subnets (expand)"
+		"[root] module.vpc (close)" -> "[root] module.vpc.output.public_subnets (expand)"
+		"[root] module.vpc (close)" -> "[root] module.vpc.output.vpc_id (expand)"
+		"[root] module.vpc (close)" -> "[root] module.vpc.var.aws_region (expand)"
+		"[root] module.vpc.aws_eip.nat (expand)" -> "[root] module.vpc.var.project_name (expand)"
+		"[root] module.vpc.aws_eip.nat (expand)" -> "[root] provider[\"registry.terraform.io/hashicorp/aws\"]"
+		"[root] module.vpc.aws_internet_gateway.main (expand)" -> "[root] module.vpc.aws_vpc.main (expand)"
+		"[root] module.vpc.aws_nat_gateway.main (expand)" -> "[root] module.vpc.aws_eip.nat (expand)"
+		"[root] module.vpc.aws_nat_gateway.main (expand)" -> "[root] module.vpc.aws_internet_gateway.main (expand)"
+		"[root] module.vpc.aws_nat_gateway.main (expand)" -> "[root] module.vpc.aws_subnet.public (expand)"
+		"[root] module.vpc.aws_route_table.private (expand)" -> "[root] module.vpc.aws_nat_gateway.main (expand)"
+		"[root] module.vpc.aws_route_table.public (expand)" -> "[root] module.vpc.aws_internet_gateway.main (expand)"
+		"[root] module.vpc.aws_route_table_association.private (expand)" -> "[root] module.vpc.aws_route_table.private (expand)"
+		"[root] module.vpc.aws_route_table_association.private (expand)" -> "[root] module.vpc.aws_subnet.private (expand)"
+		"[root] module.vpc.aws_route_table_association.public (expand)" -> "[root] module.vpc.aws_route_table.public (expand)"
+		"[root] module.vpc.aws_route_table_association.public (expand)" -> "[root] module.vpc.aws_subnet.public (expand)"
+		"[root] module.vpc.aws_subnet.private (expand)" -> "[root] module.vpc.aws_vpc.main (expand)"
+		"[root] module.vpc.aws_subnet.private (expand)" -> "[root] module.vpc.data.aws_availability_zones.available (expand)"
+		"[root] module.vpc.aws_subnet.public (expand)" -> "[root] module.vpc.aws_vpc.main (expand)"
+		"[root] module.vpc.aws_subnet.public (expand)" -> "[root] module.vpc.data.aws_availability_zones.available (expand)"
+		"[root] module.vpc.aws_vpc.main (expand)" -> "[root] module.vpc.var.project_name (expand)"
+		"[root] module.vpc.aws_vpc.main (expand)" -> "[root] module.vpc.var.vpc_cidr (expand)"
+		"[root] module.vpc.aws_vpc.main (expand)" -> "[root] provider[\"registry.terraform.io/hashicorp/aws\"]"
+		"[root] module.vpc.data.aws_availability_zones.available (expand)" -> "[root] module.vpc (expand)"
+		"[root] module.vpc.data.aws_availability_zones.available (expand)" -> "[root] provider[\"registry.terraform.io/hashicorp/aws\"]"
+		"[root] module.vpc.output.private_subnets (expand)" -> "[root] module.vpc.aws_subnet.private (expand)"
+		"[root] module.vpc.output.public_subnets (expand)" -> "[root] module.vpc.aws_subnet.public (expand)"
+		"[root] module.vpc.output.vpc_id (expand)" -> "[root] module.vpc.aws_vpc.main (expand)"
+		"[root] module.vpc.var.aws_region (expand)" -> "[root] module.vpc (expand)"
+		"[root] module.vpc.var.aws_region (expand)" -> "[root] var.aws_region"
+		"[root] module.vpc.var.project_name (expand)" -> "[root] module.vpc (expand)"
+		"[root] module.vpc.var.project_name (expand)" -> "[root] var.project_name"
+		"[root] module.vpc.var.vpc_cidr (expand)" -> "[root] module.vpc (expand)"
+		"[root] module.vpc.var.vpc_cidr (expand)" -> "[root] var.vpc_cidr"
+		"[root] output.dynamodb_table_name (expand)" -> "[root] aws_dynamodb_table.metadata_storage (expand)"
+		"[root] output.rds_endpoint (expand)" -> "[root] module.rds.output.db_endpoint (expand)"
+		"[root] output.sqs_queue_url (expand)" -> "[root] aws_sqs_queue.message_queue (expand)"
+		"[root] provider[\"registry.terraform.io/hashicorp/aws\"] (close)" -> "[root] aws_cloudwatch_metric_alarm.rds_cpu (expand)"
+		"[root] provider[\"registry.terraform.io/hashicorp/aws\"] (close)" -> "[root] aws_cloudwatch_metric_alarm.sqs_depth (expand)"
+		"[root] provider[\"registry.terraform.io/hashicorp/aws\"] (close)" -> "[root] aws_iam_role_policy.ecs_task_policy (expand)"
+		"[root] provider[\"registry.terraform.io/hashicorp/aws\"] (close)" -> "[root] aws_sns_topic_subscription.email_subscription (expand)"
+		"[root] provider[\"registry.terraform.io/hashicorp/aws\"] (close)" -> "[root] module.ecs.aws_ecs_service.main (expand)"
+		"[root] provider[\"registry.terraform.io/hashicorp/aws\"] (close)" -> "[root] module.ecs.aws_iam_role_policy_attachment.ecs_task_execution_role_policy (expand)"
+		"[root] provider[\"registry.terraform.io/hashicorp/aws\"] (close)" -> "[root] module.vpc.aws_route_table_association.private (expand)"
+		"[root] provider[\"registry.terraform.io/hashicorp/aws\"] (close)" -> "[root] module.vpc.aws_route_table_association.public (expand)"
+		"[root] provider[\"registry.terraform.io/hashicorp/aws\"]" -> "[root] var.aws_region"
+		"[root] root" -> "[root] module.ecs (close)"
+		"[root] root" -> "[root] module.rds (close)"
+		"[root] root" -> "[root] module.vpc (close)"
+		"[root] root" -> "[root] output.dynamodb_table_name (expand)"
+		"[root] root" -> "[root] output.rds_endpoint (expand)"
+		"[root] root" -> "[root] output.sqs_queue_url (expand)"
+		"[root] root" -> "[root] provider[\"registry.terraform.io/hashicorp/aws\"] (close)"
+	}
+}

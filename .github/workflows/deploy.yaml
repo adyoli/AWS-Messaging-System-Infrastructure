@@ -1,0 +1,59 @@
+name: Deploy Messaging System Infrastructure
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  terraform:
+    name: "Terraform CI/CD"
+    runs-on: ubuntu-latest
+    env:
+      # This is a best practice for non-interactive runs
+      TF_IN_AUTOMATION: true
+      # Pass DB password as a secret
+      TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -input=false
+        # For PRs, the plan could be posted as a comment
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve -input=false
+
+      - name: Run Post-Deploy Health Check
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          pip install requests
+          # Wait a bit for the ALB to be fully available
+          sleep 60 
+          URL=$(terraform output -raw alb_dns_name)
+          python scripts/health_check.py http://${URL}
