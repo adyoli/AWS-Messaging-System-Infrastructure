@@ -43,32 +43,15 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: terraform plan -no-color -input=false -var-file="terraform.tfvars"
-        # For PRs, the plan could be posted as a comment
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars"
 
-      - name: Wait for ALB to be ready
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: sleep 2
-
-      - name: Debug URL
-        run: terraform output alb_dns_name
-
       - name: Run Post-Deploy Health Check
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: |
           pip install requests
-          sleep 60
           URL=$($TERRAFORM_CLI_PATH/terraform-bin output -raw alb_dns_name)
           echo "ALB URL: $URL"
           python scripts/health_check.py "http://$URL"
-
-      - name: Wait before Destroy
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: sleep 30
-
-      - name: Destroy Infrastructure
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: terraform destroy -auto-approve
