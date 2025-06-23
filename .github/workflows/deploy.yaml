@@ -35,6 +35,10 @@ jobs:
       - name: Terraform Init
         id: init
         run: terraform init
+      
+      - name: Clean up before apply
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: terraform destroy -auto-approve
 
       - name: Terraform Validate
         id: validate
