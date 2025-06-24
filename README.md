@@ -2,7 +2,7 @@
 
 This repository contains a production-ready, AWS-based infrastructure for a containerized web application. It is provisioned entirely with Terraform and deployed automatically via a CI/CD pipeline using GitHub Actions.
 
-This project demonstrates modern DevOps and cloud-native best practices, including immutable infrastructure, automated testing, and comprehensive monitoring. Instead of a simple echo container, this solution uses a custom Python Flask application to provide a more realistic and extensible workload.
+This project demonstrates modern DevOps and cloud-native best practices, including immutable infrastructure, automated testing, and comprehensive monitoring. Instead of a simple echo container, this solution uses a custom Python Flask application to provide a more realistic and extensible workload that the proposed http-echo image.
 
 ## Table of Contents
 
