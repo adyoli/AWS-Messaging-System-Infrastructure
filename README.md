@@ -9,7 +9,7 @@ This project demonstrates modern DevOps and cloud-native best practices, includi
 - [Architecture Diagram](#architecture-diagram)
 - [Key Features](#key-features)
 - [Prerequisites](#prerequisites)
-- [Deployment](#deployment)
+- [Branching Strategy & Deployment Workflow](#branching-strategy--deployment-workflow)
 - [Local Development Workflows](#local-development-workflows)
 - [Repository Structure](#repository-structure)
 
@@ -44,7 +44,7 @@ graph TD
         end
 
         subgraph "Notification Endpoint"
-            Subscription[SNS Subscription <br> e.g., Email]
+            Subscription[SNS Subscription <br> Email]
         end
 
 
@@ -86,21 +86,33 @@ graph TD
 - A **GitHub Account** and a forked copy of this repository.
 - An **AWS Account** with sufficient permissions to create the required resources.
 
-## Deployment
+## Branching Strategy & Deployment Workflow
 
-### CI/CD Deployment (Recommended Workflow)
+This repository uses a GitFlow-like branching model to ensure stability and collaboration.
 
-The primary and recommended method for deploying this infrastructure is to use the automated CI/CD pipeline. The pipeline is configured to run on every push to the `master` branch.
+-   **`master` Branch:** Represents the stable, production-ready state. Direct pushes should be disabled in GitHub branch protection rules.
+-   **`develop` Branch:** The primary integration branch for new features. All feature branches are merged here.
+-   **`feature/*` Branches:** Used for individual feature development. Branched from `develop`.
 
-**To trigger a deployment:**
-1.  Commit your changes to a feature branch.
-2.  Create a Pull Request to merge into `master`.
-3.  Once the Pull Request is reviewed and merged, the GitHub Actions workflow will automatically:
-    - Build and push the new Docker image to ECR with a unique commit SHA tag.
-    - Deploy the infrastructure changes via Terraform, updating the ECS service to use the new image.
-    - Run the `scripts/health_check.py` script to validate the deployment is healthy.
+### The CI/CD Pipeline
 
-This method ensures that every deployment is automated, version-controlled, and consistent.
+The GitHub Actions workflow is branch-aware and automates the following process:
+
+1.  **Developing a Feature:**
+    -   Create a `feature/` branch from `develop`.
+    -   Make your code and infrastructure changes.
+
+2.  **Validation (`terraform plan`):**
+    -   Open a Pull Request (targeting either `develop` or `master`).
+    -   Push commits to the `develop` branch.
+    -   For any of the above events, the CI/CD pipeline will automatically trigger and run up to `terraform plan`. This shows a preview of infrastructure changes without deploying anything, which is crucial for code reviews and integration testing.
+
+3.  **Production Deployment (`terraform apply`):**
+    -   When you are ready for a release, merge your changes into the `master` branch (typically via a PR from `develop`).
+    -   A push to `master` is the **only event** that triggers a full production deployment. The pipeline will:
+        -   Build and push the Docker image to ECR.
+        -   Run `terraform apply` to deploy the infrastructure.
+        -   Execute a health check to verify the deployment.
 
 ## Local Development Workflows
 
