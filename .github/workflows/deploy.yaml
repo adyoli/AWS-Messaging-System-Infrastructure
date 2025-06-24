@@ -69,7 +69,16 @@ jobs:
           docker build -t my-flask-app .
           echo "REPO=863518437902.dkr.ecr.us-east-1.amazonaws.com/bonmoja-assessment-repo" >> $GITHUB_ENV
           echo "SHA_TAG=$(echo $GITHUB_SHA | head -c 7)" >> $GITHUB_ENV
-          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.REPO }}
+          echo "Building image with tag: ${{ env.SHA_TAG }}"
+          echo "Pushing to ECR repository: ${{ env.REPO }}"
+          
+          # Ensure ECR repository exists
+          aws ecr describe-repositories --repository-names bonmoja-assessment-repo --region us-east-1 || aws ecr create-repository --repository-name bonmoja-assessment-repo --region us-east-1
+          
+          # Login to ECR
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ env.REPO }}
+          
+          # Tag and push images
           docker tag my-flask-app:latest ${{ env.REPO }}:latest
           docker tag my-flask-app:latest ${{ env.REPO }}:${{ env.SHA_TAG }}
           docker push ${{ env.REPO }}:latest
