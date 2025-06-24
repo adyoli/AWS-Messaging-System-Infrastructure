@@ -4,35 +4,48 @@ on:
   push:
     branches:
       - master
+      - develop
   pull_request:
+    branches:
+      - master
+      - develop
+
+env:
+  # Global environment variables
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: bonmoja-assessment-repo
+  ECR_REGISTRY: 863518437902.dkr.ecr.us-east-1.amazonaws.com
 
 jobs:
   terraform:
     name: "Terraform CI/CD"
     runs-on: ubuntu-latest
     env:
-      # This is a best practice for non-interactive runs
+      # Terraform automation settings
       TF_IN_AUTOMATION: true
       # Pass DB password as a secret
       TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
 
     steps:
+      # --- Code Checkout ---
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
+      # --- Terraform Setup ---
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.0
 
+      # --- AWS Authentication ---
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
-      # --- Terraform: Prepare and Plan Infrastructure ---
+      # --- Infrastructure Validation ---
       # Ensure all AWS resources (ECR, ECS, ALB, etc.) exist and are up-to-date before building and pushing the Docker image.
       - name: Terraform Init
         id: init
@@ -46,50 +59,85 @@ jobs:
         id: plan
         run: terraform plan -no-color -input=false -var-file="terraform.tfvars"
 
-      # --- Docker Build & Push: Hardened Flask App ---
+      # --- Docker Image Build & Push ---
       # Build and push the Docker image after confirming infra plan, but before apply.
       # The Dockerfile uses a multi-stage build, pinned dependencies, and a dedicated non-root user for security.
       # The image is tagged with both 'latest' and the commit SHA, and pushed to ECR for ECS deployment.
-      - name: Build Docker image
-        run: docker build -t my-flask-app .
-
-      - name: Set up Docker tags
-        id: docker_tags
-        run: |
-          echo "REPO=863518437902.dkr.ecr.us-east-1.amazonaws.com/bonmoja-assessment-repo" >> $GITHUB_ENV
-          echo "SHA_TAG=$(echo $GITHUB_SHA | head -c 7)" >> $GITHUB_ENV
-
-      - name: Login to Amazon ECR
+      - name: Build and Push Docker Image
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
         env:
-          AWS_REGION: us-east-1
+          REPO: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}
         run: |
-          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ env.REPO }}
+          # Calculate short SHA for image tagging
+          SHORT_SHA=$(echo ${{ github.sha }} | head -c 7)
+          echo "🚀 Building image with tag: $SHORT_SHA"
+          echo "📦 Pushing to ECR repository: $REPO"
+          
+          # Ensure ECR repository exists
+          echo "🔍 Checking ECR repository..."
+          aws ecr describe-repositories \
+            --repository-names ${{ env.ECR_REPOSITORY }} \
+            --region ${{ env.AWS_REGION }} \
+            || aws ecr create-repository \
+              --repository-name ${{ env.ECR_REPOSITORY }} \
+              --region ${{ env.AWS_REGION }}
+          
+          # Authenticate with ECR
+          echo "🔐 Authenticating with ECR..."
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
+            docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+          
+          # Build Docker image
+          echo "🏗️ Building Docker image..."
+          docker build -t my-flask-app .
+          
+          # Tag images
+          echo "🏷️ Tagging images..."
+          docker tag my-flask-app:latest $REPO:latest
+          docker tag my-flask-app:latest $REPO:$SHORT_SHA
+          
+          # Push images
+          echo "📤 Pushing images to ECR..."
+          docker push $REPO:latest
+          docker push $REPO:$SHORT_SHA
+          
+          echo "✅ Docker image build and push completed successfully!"
 
-      - name: Tag Docker image (latest)
-        run: docker tag my-flask-app:latest ${{ env.REPO }}:latest
-
-      - name: Tag Docker image (commit SHA)
-        run: docker tag my-flask-app:latest ${{ env.REPO }}:${{ env.SHA_TAG }}
-
-      - name: Push Docker image to ECR (latest)
-        run: docker push ${{ env.REPO }}:latest
-
-      - name: Push Docker image to ECR (commit SHA)
-        run: docker push ${{ env.REPO }}:${{ env.SHA_TAG }}
-
-      # --- Terraform: Apply Infrastructure Changes ---
+      # --- Infrastructure Deployment ---
       # Apply infrastructure changes, including updating ECS to use the new image.
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars" -var="ecs_image_uri=${{ env.REPO }}:${{ env.SHA_TAG }}"
-
-      # --- Post-Deploy Health Check ---
-      # After deployment, run a health check against the ALB endpoint to verify the service is up.
-      - name: Run Post-Deploy Health Check
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+      # Only apply on master branch pushes to avoid accidental infrastructure changes from develop.
+      - name: Deploy Infrastructure
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        env:
+          REPO: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}
         run: |
+          SHORT_SHA=$(echo ${{ github.sha }} | head -c 7)
+          echo "🚀 Deploying infrastructure with image: $REPO:$SHORT_SHA"
+          
+          terraform apply \
+            -auto-approve \
+            -input=false \
+            -var-file="terraform.tfvars" \
+            -var="ecs_image_uri=$REPO:$SHORT_SHA"
+          
+          echo "✅ Infrastructure deployment completed!"
+
+      # --- Post-Deployment Health Check ---
+      # After deployment, run a health check against the ALB endpoint to verify the service is up.
+      # Only run health checks on master branch deployments.
+      - name: Health Check
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: |
+          echo "🏥 Running post-deployment health check..."
+          
+          # Install required packages
           pip install requests
-          URL=$($TERRAFORM_CLI_PATH/terraform-bin output -raw alb_dns_name)
-          echo "ALB URL: $URL"
-          python scripts/health_check.py "http://$URL"
+          
+          # Get ALB URL and run health check
+          ALB_URL=$(terraform output -raw alb_dns_name)
+          echo "🌐 ALB URL: $ALB_URL"
+          
+          python scripts/health_check.py "http://$ALB_URL"
+          
+          echo "✅ Health check completed successfully!"
 

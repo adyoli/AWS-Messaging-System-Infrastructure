@@ -11,6 +11,15 @@ This document outlines the architecture, trade-offs, security considerations, mo
 - **SQS & SNS**: Asynchronous messaging; SNS delivers alerts via email subscription.
 - **CloudWatch**: Logs aggregated from ECS and metrics used to trigger alarms.
 
+## CI/CD and Deployment Strategy
+
+The project utilizes a GitFlow-based CI/CD strategy to ensure stability and automation.
+
+- **Branching Model:** The `master` branch is the source of truth for production, while a `develop` branch serves as an integration point for new features.
+- **Pull Request Validation:** On every Pull Request targeting `master` or `develop`, the CI/CD pipeline runs `terraform plan` to validate changes without applying them.
+- **Docker Image Building:** On pushes to both `develop` and `master` branches, the pipeline builds and pushes Docker images to ECR with both `latest` and commit SHA tags for traceability.
+- **Automated Deployments:** A push to the `master` branch is the only event that triggers a full deployment (`terraform apply`), ensuring that only reviewed and tested code reaches the production environment.
+
 ## Security & IAM
 
 - **Least-Privilege IAM Roles**:
