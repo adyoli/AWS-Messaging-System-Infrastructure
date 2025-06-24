@@ -107,10 +107,15 @@ The GitHub Actions workflow is branch-aware and automates the following process:
     -   Push commits to the `develop` branch.
     -   For any of the above events, the CI/CD pipeline will automatically trigger and run up to `terraform plan`. This shows a preview of infrastructure changes without deploying anything, which is crucial for code reviews and integration testing.
 
-3.  **Production Deployment (`terraform apply`):**
+3.  **Docker Image Building:**
+    -   On pushes to both `develop` and `master` branches, the pipeline builds and pushes Docker images to ECR.
+    -   Images are tagged with both `latest` and the commit SHA for traceability.
+    -   This ensures images are available for testing and deployment.
+
+4.  **Production Deployment (`terraform apply`):**
     -   When you are ready for a release, merge your changes into the `master` branch (typically via a PR from `develop`).
     -   A push to `master` is the **only event** that triggers a full production deployment. The pipeline will:
-        -   Build and push the Docker image to ECR.
+        -   Build and push the Docker image to ECR (if not already done).
         -   Run `terraform apply` to deploy the infrastructure.
         -   Execute a health check to verify the deployment.
 

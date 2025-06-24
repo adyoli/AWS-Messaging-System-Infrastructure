@@ -55,8 +55,8 @@ jobs:
       # The Dockerfile uses a multi-stage build, pinned dependencies, and a dedicated non-root user for security.
       # The image is tagged with both 'latest' and the commit SHA, and pushed to ECR for ECS deployment.
       - name: Build and Push Docker Image
-        # This step only runs for pushes to master, not for PRs or develop.
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        # This step runs for pushes to both master and develop branches
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
         run: |
           docker build -t my-flask-app .
           echo "REPO=863518437902.dkr.ecr.us-east-1.amazonaws.com/bonmoja-assessment-repo" >> $GITHUB_ENV
@@ -69,12 +69,14 @@ jobs:
 
       # --- Terraform: Apply Infrastructure Changes ---
       # Apply infrastructure changes, including updating ECS to use the new image.
+      # Only apply on master branch pushes to avoid accidental infrastructure changes from develop.
       - name: Terraform Apply
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars" -var="ecs_image_uri=${{ env.REPO }}:${{ env.SHA_TAG }}"
 
       # --- Post-Deploy Health Check ---
       # After deployment, run a health check against the ALB endpoint to verify the service is up.
+      # Only run health checks on master branch deployments.
       - name: Run Post-Deploy Health Check
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: |
