@@ -54,6 +54,14 @@ jobs:
       # Build and push the Docker image after confirming infra plan, but before apply.
       # The Dockerfile uses a multi-stage build, pinned dependencies, and a dedicated non-root user for security.
       # The image is tagged with both 'latest' and the commit SHA, and pushed to ECR for ECS deployment.
+      - name: Login to Docker Hub
+        # This step runs for pushes to both master and develop branches
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build and Push Docker Image
         # This step runs for pushes to both master and develop branches
         if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
