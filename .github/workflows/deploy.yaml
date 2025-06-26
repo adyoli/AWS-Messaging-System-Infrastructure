@@ -13,7 +13,7 @@ on:
 env:
   # Global environment variables
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: bonmoja-assessment-repo
+  ECR_REPOSITORY: aws-messaging-system-infra-repo
   ECR_REGISTRY: 863518437902.dkr.ecr.us-east-1.amazonaws.com
 
 jobs:
@@ -89,12 +89,12 @@ jobs:
           
           # Build Docker image
           echo "🏗️ Building Docker image..."
-          docker build -t my-flask-app .
+          docker build -t aws-messaging-flask-app .
           
           # Tag images
           echo "🏷️ Tagging images..."
-          docker tag my-flask-app:latest $REPO:latest
-          docker tag my-flask-app:latest $REPO:$SHORT_SHA
+          docker tag aws-messaging-flask-app:latest $REPO:latest
+          docker tag aws-messaging-flask-app:latest $REPO:$SHORT_SHA
           
           # Push images
           echo "📤 Pushing images to ECR..."

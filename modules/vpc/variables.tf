@@ -8,6 +8,11 @@ variable "project_name" {
   type        = string
 }
 
+variable "project_prefix" {
+  description = "Short, lowercase prefix for resource names."
+  type        = string
+}
+
 variable "vpc_cidr" {
   description = "The CIDR block for the VPC."
   type        = string

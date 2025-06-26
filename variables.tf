@@ -33,3 +33,8 @@ variable "ecs_image_uri" {
   description = "The URI of the Docker image to use for the ECS service."
   type        = string
 }
+
+variable "project_prefix" {
+  description = "Short, lowercase prefix for resource names."
+  type        = string
+}

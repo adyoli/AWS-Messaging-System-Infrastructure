@@ -1,4 +1,4 @@
-# Bonmoja AWS Messaging System Infrastructure
+# AWS Messaging System Infrastructure
 
 This repository contains a production-ready, AWS-based infrastructure for a containerized web application. It is provisioned entirely with Terraform and deployed automatically via a CI/CD pipeline using GitHub Actions.
 
@@ -134,10 +134,10 @@ This approach is fast and ideal for iterating on the application code. It allows
 From the root of the project, build the image and run the container, mapping port 8080.
 ```bash
 # Build the image
-docker build -t bonmoja-flask-app .
+docker build -t aws-messaging-flask-app .
 
 # Run the container
-docker run --rm -p 8080:8080 bonmoja-flask-app
+docker run --rm -p 8080:8080 aws-messaging-flask-app
 ```
 
 **3. Test the Endpoints:**
@@ -165,7 +165,7 @@ The Terraform deployment requires the image to exist in ECR.
 # Set your AWS Account ID and region
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 export AWS_REGION=$(aws configure get region)
-export REPO_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/bonmoja-assessment-repo"
+export REPO_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/aws-messaging-system-infra-repo"
 export IMAGE_TAG="local-test-$(date +%s)"
 
 # Authenticate Docker to ECR
@@ -180,7 +180,7 @@ docker push $REPO_URI:$IMAGE_TAG
 Create a `terraform.tfvars` file and provide the required variables.
 ```hcl
 # terraform.tfvars
-project_name    = "bonmoja-assessment"
+project_name    = "AWS-Messaging-System-Infrastructure"
 aws_region      = "us-east-1"
 ecs_image_uri   = "YOUR_REPO_URI:YOUR_IMAGE_TAG" # e.g., from the step above
 db_password     = "your-secure-database-password"

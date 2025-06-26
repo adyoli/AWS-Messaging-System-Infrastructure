@@ -140,7 +140,7 @@ The project utilizes a GitFlow-based CI/CD strategy to ensure stability and auto
   Use AWS Compute Optimizer recommendations and implement caching strategies (ElastiCache, CloudFront) to improve performance and reduce costs.
 
 - **Security Hardening:**  
-  Enable AWS WAF, GuardDuty, and implement least-privilege IAM policies. Regular security assessments and penetration testing.
+  Enable AWS WAF, GuardDuty, and implement least-privilege IAM policies. Regular security reviews and penetration testing.
 
 - **Operational Excellence:**  
   Maintain detailed runbooks, conduct post-incident reviews, and continuously improve processes based on lessons learned.
