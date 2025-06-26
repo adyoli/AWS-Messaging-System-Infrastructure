@@ -7,7 +7,7 @@ app = Flask(__name__)
 @app.route("/")
 def root():
     return jsonify({
-        "message": "Hello from Bonmoja ECS!",
+        "message": "Hello from AWS-Messaging-System-Infrastructure ECS!",
         "headers": dict(request.headers),
         "env": {k: v for k, v in os.environ.items() if k.startswith("AWS_")},
     })

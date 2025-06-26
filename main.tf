@@ -7,10 +7,10 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "bonmoja-tf-state"
-    key            = "bonmoja/terraform.tfstate"
+    bucket         = "aws-messaging-system-infra-tf-state"
+    key            = "aws-messaging-system-infra/terraform.tfstate"
     region         = "us-east-1"
-    dynamodb_table = "bonmoja-tf-locks"
+    dynamodb_table = "aws-messaging-system-infra-tf-locks"
     encrypt        = true
   }
 }
@@ -23,10 +23,11 @@ provider "aws" {
 # Core Networking
 # -------------------------------------------------------------------------------------------------
 module "vpc" {
-  source       = "./modules/vpc"
-  project_name = var.project_name
-  vpc_cidr     = var.vpc_cidr
-  aws_region   = var.aws_region
+  source        = "./modules/vpc"
+  project_name  = var.project_name
+  project_prefix = var.project_prefix
+  vpc_cidr      = var.vpc_cidr
+  aws_region    = var.aws_region
 }
 
 # -------------------------------------------------------------------------------------------------
@@ -36,6 +37,7 @@ module "ecs" {
   source = "./modules/ecs"
 
   project_name          = var.project_name
+  project_prefix        = var.project_prefix
   aws_region            = var.aws_region
   vpc_id                = module.vpc.vpc_id
   public_subnets        = module.vpc.public_subnets
@@ -52,6 +54,7 @@ module "rds" {
   source = "./modules/rds"
 
   project_name    = var.project_name
+  project_prefix  = var.project_prefix
   vpc_id          = module.vpc.vpc_id
   private_subnets = module.vpc.private_subnets
   db_username     = var.db_username
@@ -60,7 +63,7 @@ module "rds" {
 }
 
 resource "aws_dynamodb_table" "metadata_storage" {
-  name         = "${var.project_name}-metadata"
+  name         = "${var.project_prefix}-metadata"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "id"
 
@@ -78,14 +81,14 @@ resource "aws_dynamodb_table" "metadata_storage" {
 # Decoupled Messaging
 # -------------------------------------------------------------------------------------------------
 resource "aws_sqs_queue" "message_queue" {
-  name = "${var.project_name}-message-queue"
+  name = "${var.project_prefix}-message-queue"
   tags = {
     Project = var.project_name
   }
 }
 
 resource "aws_sns_topic" "notification_topic" {
-  name = "${var.project_name}-notification-topic"
+  name = "${var.project_prefix}-notification-topic"
   tags = {
     Project = var.project_name
   }
@@ -101,7 +104,7 @@ resource "aws_sns_topic_subscription" "email_subscription" {
 # Security & IAM
 # -------------------------------------------------------------------------------------------------
 resource "aws_iam_role" "ecs_task_role" {
-  name = "${var.project_name}-ecs-task-role"
+  name = "${var.project_prefix}-ecs-task-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -117,7 +120,7 @@ resource "aws_iam_role" "ecs_task_role" {
 }
 
 resource "aws_iam_role_policy" "ecs_task_policy" {
-  name = "${var.project_name}-ecs-task-policy"
+  name = "${var.project_prefix}-ecs-task-policy"
   role = aws_iam_role.ecs_task_role.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -155,7 +158,7 @@ resource "aws_iam_role_policy" "ecs_task_policy" {
 # Monitoring & Alerting
 # -------------------------------------------------------------------------------------------------
 resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
-  alarm_name          = "${var.project_name}-rds-cpu-high"
+  alarm_name          = "${var.project_prefix}-rds-cpu-high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "1"
   metric_name         = "CPUUtilization"
@@ -171,7 +174,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "sqs_depth" {
-  alarm_name          = "${var.project_name}-sqs-depth-high"
+  alarm_name          = "${var.project_prefix}-sqs-depth-high"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "2" # for 10 minutes total
   metric_name         = "ApproximateNumberOfMessagesVisible"

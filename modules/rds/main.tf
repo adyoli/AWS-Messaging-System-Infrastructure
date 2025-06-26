@@ -1,14 +1,14 @@
 resource "aws_db_subnet_group" "default" {
-  name       = "${var.project_name}-rds-subnet-group"
+  name       = "${var.project_prefix}-rds-subnet-group"
   subnet_ids = var.private_subnets
 
   tags = {
-    Name = "${var.project_name}-rds-subnet-group"
+    Name = "${var.project_prefix}-rds-subnet-group"
   }
 }
 
 resource "aws_security_group" "rds" {
-  name        = "${var.project_name}-rds-sg"
+  name        = "${var.project_prefix}-rds-sg"
   description = "Allow inbound traffic to RDS from the ECS service"
   vpc_id      = var.vpc_id
 
@@ -33,7 +33,7 @@ resource "aws_security_group" "rds" {
 }
 
 resource "aws_db_instance" "default" {
-  identifier           = "${var.project_name}-db"
+  identifier           = "${var.project_prefix}-db"
   allocated_storage    = 20
   storage_type         = "gp2"
   engine               = "postgres"

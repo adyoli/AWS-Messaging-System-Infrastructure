@@ -3,6 +3,11 @@ variable "project_name" {
   type        = string
 }
 
+variable "project_prefix" {
+  description = "Short, lowercase prefix for resource names."
+  type        = string
+}
+
 variable "vpc_id" {
   description = "The ID of the VPC to deploy the RDS instance in."
   type        = string
